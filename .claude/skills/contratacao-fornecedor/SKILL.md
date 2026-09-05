@@ -64,8 +64,43 @@ como comparável sem avisar.
 ### Etapa 2 — Mapa de cotação
 Montar `templates/mapa_cotacao_modelo.xlsx` preenchido, um fornecedor por coluna,
 seguindo a tripla conferência (mapear item a item por descrição técnica completa,
-nunca aproximar "no chute"; recalcular fórmulas com LibreOffice headless antes de
-entregar; reportar qualquer suposição feita). Entregar o arquivo.
+nunca aproximar "no chute"; reportar qualquer suposição feita). Antes de entregar,
+aplicar o checklist de qualidade visual abaixo. Entregar o arquivo.
+
+### Checklist de qualidade visual do .xlsx (mapa e OC, sempre antes de entregar)
+Testado e validado no caso Prumus/item 15 — três bugs reais que passaram batido na
+primeira entrega:
+1. **Fórmula mostrando R$ 0,00 ou em branco**: o LibreOffice headless não funciona
+   neste ambiente (`soffice --convert-to ...` falha até em arquivos triviais — não
+   perder tempo tentando de novo, é limitação do sandbox). Sem recalcular, o
+   `openpyxl` grava a fórmula mas nenhum valor em cache, e qualquer visualizador que
+   não recalcule ao vivo (preview do Files/Quick Look no iPhone, por exemplo) mostra
+   0 ou vazio em vez do resultado. Corrigir escrevendo o valor calculado direto no
+   XML junto da fórmula (o próprio `openpyxl` não expõe isso na API — precisa abrir
+   o `.xlsx` como zip, achar o `<c r="CELULA">...<f>...</f></c>` na
+   `xl/worksheets/sheetN.xml` e inserir `<v>VALOR</v>` antes de `</c>`). Fazer isso
+   para toda fórmula de subtotal/total que aparece no arquivo (mapa: `K` de cada
+   item, `J22`/`L22`/`N22`, `J25`/`L25`/`N25`; OC: `H` de cada item, `H38`, `H50`).
+   Depois, reabrir com `data_only=True` e conferir que os valores batem com a conta
+   manual — nunca entregar confiando só na fórmula sem essa conferência.
+2. **Linhas de item sem uso aparecendo em branco**: quando há menos itens do que
+   linhas no template (ex.: 1 item só), **ocultar** as linhas extras
+   (`ws.row_dimensions[r].hidden = True`) — nunca deletar (`delete_rows` quebra
+   merged cells e desloca fórmulas sem avisar, já visto no caso Vale dos
+   Cristais/KASAP) e nunca deixar visível em branco.
+3. **Texto de descrição "estourando" pra fora da linha**: célula com `wrapText=True`
+   mas linha com altura padrão (`row_dimensions[r].height = None`) só cabe uma
+   linha de texto — uma descrição técnica longa transborda visualmente pra fora do
+   desenho da célula em qualquer visualizador. Setar `row_dimensions[r].height`
+   explicitamente pra um valor generoso (~15pt por linha de texto esperada; para
+   descrição técnica típica de 3-5 linhas, 75-100pt) sempre que a descrição for mais
+   longa que uma linha curta. Alguns templates (a OC, por exemplo) já vêm com altura
+   generosa de fábrica — conferir antes de assumir que precisa mudar.
+
+Sem uma ferramenta de renderização neste ambiente, a única forma de "ver como
+ficou" é reabrir o arquivo salvo e inspecionar programaticamente: valores calculados
+(`data_only=True`), `row_dimensions[r].hidden` e `.height`, `column_dimensions[c].hidden`.
+Fazer essa inspeção sempre, não só quando o usuário reclamar.
 
 ### Etapa 3 — Escolha do vencedor
 Perguntar qual fornecedor ganhou, se Bruno ainda não tiver dito.
@@ -112,52 +147,29 @@ Nunca entregar sem checar, e nunca ignorar silenciosamente uma inconsistência e
 Se algo não bater, corrigir antes de entregar e avisar o que foi ajustado — não
 entregar "do jeito que deu".
 
-### Etapa 7 — Entrega e arquivamento (Drive + Trello + download)
-Bruno já organiza cada obra assim (validado no caso Concórdia Corporate — usar como
-referência de convenção, não copiar valores):
-- **Drive**: pasta da obra (ex. "41 - Reforma lobby - Concórdia Corporate") →
-  subpasta de empreiteiros/fornecedores (ex. "05 - Empreiteiros e Fornecedores") →
-  subpasta numerada por fornecedor (ex. "21 - Mega furos (furos de laje)"), com
-  subpastas fixas dentro: `Proposta`, `Orçamento`, `Medição`, `Contrato`. O número da
-  subpasta do fornecedor é o mesmo número do cartão dele no Trello — usar sempre para
-  casar os dois.
-- **Trello**: um board por obra (ex. "Controle De Comprar Concórdia"), com listas de
-  pipeline (`Pedido de compra` → `Aguardando aprovação` → `Coleta aprovada` →
-  `Aguardando entraga/ordem de serviço`) e uma lista separada `Contratos empreiteiro`
-  com um cartão por fornecedor já contratado (nome `Contrato <Fornecedor>`).
+### Etapa 7 — Entrega (download apenas, sem tocar em Drive/Trello)
+Testado em produção: subir os `.xlsx`/`.docx` preenchidos direto pro Drive via
+base64 não é confiável neste ambiente (arquivos de ~15-35 KB viram strings base64
+de 15-45 mil caracteres, longas demais para reproduzir com garantia — uma tentativa
+já corrompeu silenciosamente um arquivo real antes de ser pega pelo `fileSize` de
+conferência). Não vale o risco com documentos de obra de verdade. Por decisão do
+Bruno: **nunca** escrever direto no Drive nem no Trello — só gerar o arquivo e
+entregar via SendUserFile. Bruno mesmo arrasta pro lugar certo.
 
-Ao entregar um documento:
-1. Salvar o arquivo na subpasta correta do Drive (mapa/relatório de divergência em
-   `Orçamento`, contrato em `Contrato`; a OC vai como aba dentro do arquivo
-   consolidado da obra, não como arquivo novo — ver Etapa 5).
-2. Comentar no cartão Trello correspondente (achar pelo número/nome do fornecedor)
-   com um link para o arquivo salvo no Drive. Esta integração Trello não tem ação de
-   "anexar arquivo" de verdade — um comentário com o link do Drive é o equivalente
-   funcional.
-   - Se for o contrato e ainda não existir um cartão em `Contratos empreiteiro` para
-     esse fornecedor, criar um novo cartão lá (`Contrato <Fornecedor>`) antes de
-     comentar.
-   - **Não mover o cartão entre listas de pipeline sozinho** (ex. de "Coleta
-     aprovada" para "Aguardando entrega/ordem de serviço") — perguntar a Bruno antes,
-     é o indicador visual do andamento da obra dele e mudar sem avisar bagunça a
-     leitura do board.
-3. Entregar o mesmo arquivo via SendUserFile para download imediato.
+Para o nome do arquivo entregue já ajudar Bruno a saber onde ele vai (sem que o
+skill precise escrever lá), seguir a convenção que ele já usa:
+- **Drive**: pasta da obra → subpasta de empreiteiros/fornecedores → subpasta
+  numerada por fornecedor (mesmo número do cartão Trello dele), com subpastas fixas
+  `Proposta` / `Orçamento` / `Medição` / `Contrato` dentro. Mapa e relatório de
+  divergência vão em `Orçamento`; contrato em `Contrato`; a OC é aba dentro do
+  arquivo consolidado da obra (ver Etapa 5), não arquivo novo.
+- **Trello**: um board por obra, cartão por fornecedor nomeado
+  `NN - Fornecedor (serviço)`, mais uma lista `Contratos empreiteiro` com um cartão
+  `Contrato <Fornecedor>` por fornecedor já contratado.
 
-### Obra nova (ainda não tem pasta/board)
-Hoje só existe a obra Concórdia — tudo vai para a pasta dela no Drive e para o board
-"Controle De Comprar Concórdia" no Trello. Quando aparecer uma obra nova, **criar o
-mecanismo inteiro replicando o padrão da Concórdia**, sem esperar Bruno montar na mão:
-- **Drive**: pasta raiz da obra, subpasta de empreiteiros/fornecedores dentro dela, e
-  para cada fornecedor uma subpasta numerada com `Proposta` / `Orçamento` / `Medição`
-  / `Contrato` dentro. Copiar `templates/oc_modelo.xlsx` para dentro da pasta da obra
-  como o arquivo consolidado de OC (`KASAP Engenharia_Ordem de Compra - Obra <NOME>.xlsx`).
-- **Trello**: um board novo para a obra com as mesmas listas da Concórdia (`Pedido de
-  compra`, `Aguardando aprovação`, `Coleta aprovada`, `Aguardando entraga/ordem de
-  serviço`, `Contratos empreiteiro`, `Documentação de obra`, `Projetos`).
-
-Só perguntar a Bruno o nome/número da obra nova (para nomear pasta e board de forma
-consistente com a numeração dele) — não perguntar se deve criar a estrutura, isso já
-está decidido.
+Nomear o arquivo entregue incluindo o destino esperado, ex.:
+`Orçamento_15-Prumus_Mapa-Cotacao.xlsx`, `Contrato_15-Prumus_MaoDeObraCivil.docx`,
+e avisar em uma frase onde ele deveria ir (obra/fornecedor/subpasta).
 
 ## Estilo obrigatório
 - Técnico, direto, resumido. Sem recapitular passo a passo no resumo final.
@@ -168,9 +180,9 @@ está decidido.
 - Entregar cada arquivo via SendUserFile com nome claro, ex:
   `OC-0032_NomeFornecedor_Servico.xlsx`, `Contrato_NomeFornecedor_Servico.docx`.
 
-## Dados sensíveis — não commitar no git
+## Dados sensíveis — não commitar no git, não escrever em Drive/Trello
 Mapa, OC e contrato preenchidos contêm CNPJ, endereço, dados pessoais (RG/CPF de
 representante) e valores comerciais de terceiros. **Nunca commitar esses arquivos
 preenchidos neste repositório** — só os templates em branco em `templates/` fazem
-parte do versionamento. O destino oficial dos documentos preenchidos é o Google
-Drive + Trello da obra (Etapa 7), sempre também entregues via SendUserFile.
+parte do versionamento. **Nunca escrever esses arquivos direto no Drive ou no
+Trello** (ver Etapa 7) — entregar sempre via SendUserFile e deixar Bruno arquivar.
