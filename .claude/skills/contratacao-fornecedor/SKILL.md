@@ -143,8 +143,21 @@ Ao entregar um documento:
      leitura do board.
 3. Entregar o mesmo arquivo via SendUserFile para download imediato.
 
-Se a obra ainda não tiver estrutura de pastas/board (obra nova), perguntar a Bruno em
-vez de inventar uma convenção nova.
+### Obra nova (ainda não tem pasta/board)
+Hoje só existe a obra Concórdia — tudo vai para a pasta dela no Drive e para o board
+"Controle De Comprar Concórdia" no Trello. Quando aparecer uma obra nova, **criar o
+mecanismo inteiro replicando o padrão da Concórdia**, sem esperar Bruno montar na mão:
+- **Drive**: pasta raiz da obra, subpasta de empreiteiros/fornecedores dentro dela, e
+  para cada fornecedor uma subpasta numerada com `Proposta` / `Orçamento` / `Medição`
+  / `Contrato` dentro. Copiar `templates/oc_modelo.xlsx` para dentro da pasta da obra
+  como o arquivo consolidado de OC (`KASAP Engenharia_Ordem de Compra - Obra <NOME>.xlsx`).
+- **Trello**: um board novo para a obra com as mesmas listas da Concórdia (`Pedido de
+  compra`, `Aguardando aprovação`, `Coleta aprovada`, `Aguardando entraga/ordem de
+  serviço`, `Contratos empreiteiro`, `Documentação de obra`, `Projetos`).
+
+Só perguntar a Bruno o nome/número da obra nova (para nomear pasta e board de forma
+consistente com a numeração dele) — não perguntar se deve criar a estrutura, isso já
+está decidido.
 
 ## Estilo obrigatório
 - Técnico, direto, resumido. Sem recapitular passo a passo no resumo final.
