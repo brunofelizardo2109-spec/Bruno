@@ -32,10 +32,13 @@ os arquivos em `templates/` diretamente.
 
 ### Etapa 0 — Entrada
 Bruno anexa 2 ou 3 PDFs de proposta/orçamento de fornecedores para o mesmo serviço.
-Se ele não tiver informado, perguntar: nome da obra e nome/escopo do serviço. Perguntar
-também se ele quer pular a checagem de divergência da Etapa 1 (nem toda contratação
-precisa — cotações simples e já conhecidas podem pular). Se ele não disser nada, o
-padrão é **checar**.
+Se ele não tiver informado, perguntar: nome da obra e nome/escopo do serviço. Depois,
+usar AskUserQuestion com a pergunta **"Deseja conferir se os orçamentos estão
+equalizados?"** (sim/não) — nem toda contratação precisa (cotações simples e já
+conhecidas podem pular direto pro mapa). Se ele não disser nada, o padrão é **sim,
+checar**.
+- Se **não**: pular a Etapa 1 e ir direto pra Etapa 2, sem perguntar de novo depois —
+  a sequência daí pra frente é direta (mapa → pergunta OC → pergunta contrato).
 
 ### Etapa 1 — Gate de divergência (pular apenas se Bruno pedir explicitamente)
 Ler os PDFs inteiros (todas as páginas, com o Read tool — nunca confiar em resumo).
@@ -52,10 +55,11 @@ pagamento embutidas na proposta.
   1. **Prosseguir mesmo assim** → segue para a Etapa 2 usando os dados como estão,
      marcando no mapa quais itens ficaram divergentes.
   2. **Vou corrigir com os fornecedores** → entregar o relatório pronto para Bruno
-     mandar aos fornecedores, e parar aqui. Quando ele reanexar os orçamentos
-     corrigidos, repetir a Etapa 1 do zero nesse novo lote — é um loop: só sai dele
-     quando os orçamentos convergirem ou quando Bruno escolher "prosseguir mesmo
-     assim".
+     mandar aos fornecedores, e responder com a frase padrão **"Aguardo o envio dos
+     orçamentos corrigidos/equalizados."**, e parar aqui. Quando ele reanexar os
+     orçamentos atualizados, repetir a Etapa 1 do zero nesse novo lote — é um loop:
+     só sai dele quando os orçamentos convergirem ou quando Bruno escolher
+     "prosseguir mesmo assim".
 
 Isso é comparar escopo, não só preço: um orçamento mais barato cotando menos
 quantidade ou material diferente não é "mais barato", é outra coisa — nunca tratar
@@ -103,7 +107,10 @@ ficou" é reabrir o arquivo salvo e inspecionar programaticamente: valores calcu
 Fazer essa inspeção sempre, não só quando o usuário reclamar.
 
 ### Etapa 3 — Escolha do vencedor
-Perguntar qual fornecedor ganhou, se Bruno ainda não tiver dito.
+Perguntar qual fornecedor ganhou, se Bruno ainda não tiver dito. Em seguida, usar
+AskUserQuestion: **"Deseja que eu já emita a Ordem de Compra?"** (sim/não). Se
+**não**, parar aqui — o mapa já foi entregue, Bruno chama de novo quando quiser a
+OC. Se **sim**, seguir para a Etapa 4.
 
 ### Etapa 4 — Ficha de dados do fornecedor
 Gerar uma tabela simples (pode ser no próprio chat ou uma planilha pequena) pedindo
@@ -127,6 +134,10 @@ e normalmente já existe na pasta da obra no Drive (ver Etapa 7). Antes de gerar
    fornecedor vencedor no mapa (descrição técnica completa, não resumida — lembrar que
    nas linhas de item a coluna E é quantidade e F é unidade), parcelas de pagamento no
    bloco de observações (texto real acordado, nunca o placeholder).
+
+Depois de entregar a OC, usar AskUserQuestion: **"Deseja que eu já emita o
+contrato para essa prestação de serviço?"** (sim/não). Se **não**, parar aqui. Se
+**sim**, seguir para a Etapa 6.
 
 ### Etapa 6 — Contrato
 Preencher `templates/contrato_modelo.docx`: CONTRATADA = dados da ficha, objeto/escopo
