@@ -79,11 +79,19 @@ parcelas, valores, datas), banco/agência se houver faturamento direto. Esperar 
 preencher antes de seguir.
 
 ### Etapa 5 — Ordem de Compra
-Preencher `templates/oc_modelo.xlsx`: CONTRATANTE = dados do cliente/obra, COMPRADOR =
-Kasap Engenharia (fixo), FORNECEDOR = dados da ficha da Etapa 4, itens = os itens do
-fornecedor vencedor no mapa (descrição técnica completa, não resumida), parcelas de
-pagamento no bloco de observações (usar o texto real acordado, nunca deixar o
-placeholder).
+Bruno mantém **um único arquivo de OC por obra**, com uma aba por ordem de compra
+(`OC001`, `OC002`, `OC003`, ...) — nunca um arquivo novo por fornecedor. O arquivo
+segue o padrão de nome `KASAP Engenharia_Ordem de Compra - Obra <NOME DA OBRA>.xlsx`
+e normalmente já existe na pasta da obra no Drive (ver Etapa 7). Antes de gerar:
+1. Localizar esse arquivo (Drive ou anexado por Bruno). Se não existir ainda para a
+   obra, criar a partir de `templates/oc_modelo.xlsx`.
+2. Achar o próximo número de OC livre (maior `OCxxx` existente + 1).
+3. Duplicar a aba `OC001` (ou a última aba) dentro do próprio arquivo, renomear para
+   `OCxxx`, e preencher: CONTRATANTE = dados do cliente/obra, COMPRADOR = Kasap
+   Engenharia (fixo), FORNECEDOR = dados da ficha da Etapa 4, itens = os itens do
+   fornecedor vencedor no mapa (descrição técnica completa, não resumida — lembrar que
+   nas linhas de item a coluna E é quantidade e F é unidade), parcelas de pagamento no
+   bloco de observações (texto real acordado, nunca o placeholder).
 
 ### Etapa 6 — Contrato
 Preencher `templates/contrato_modelo.docx`: CONTRATADA = dados da ficha, objeto/escopo
@@ -104,6 +112,40 @@ Nunca entregar sem checar, e nunca ignorar silenciosamente uma inconsistência e
 Se algo não bater, corrigir antes de entregar e avisar o que foi ajustado — não
 entregar "do jeito que deu".
 
+### Etapa 7 — Entrega e arquivamento (Drive + Trello + download)
+Bruno já organiza cada obra assim (validado no caso Concórdia Corporate — usar como
+referência de convenção, não copiar valores):
+- **Drive**: pasta da obra (ex. "41 - Reforma lobby - Concórdia Corporate") →
+  subpasta de empreiteiros/fornecedores (ex. "05 - Empreiteiros e Fornecedores") →
+  subpasta numerada por fornecedor (ex. "21 - Mega furos (furos de laje)"), com
+  subpastas fixas dentro: `Proposta`, `Orçamento`, `Medição`, `Contrato`. O número da
+  subpasta do fornecedor é o mesmo número do cartão dele no Trello — usar sempre para
+  casar os dois.
+- **Trello**: um board por obra (ex. "Controle De Comprar Concórdia"), com listas de
+  pipeline (`Pedido de compra` → `Aguardando aprovação` → `Coleta aprovada` →
+  `Aguardando entraga/ordem de serviço`) e uma lista separada `Contratos empreiteiro`
+  com um cartão por fornecedor já contratado (nome `Contrato <Fornecedor>`).
+
+Ao entregar um documento:
+1. Salvar o arquivo na subpasta correta do Drive (mapa/relatório de divergência em
+   `Orçamento`, contrato em `Contrato`; a OC vai como aba dentro do arquivo
+   consolidado da obra, não como arquivo novo — ver Etapa 5).
+2. Comentar no cartão Trello correspondente (achar pelo número/nome do fornecedor)
+   com um link para o arquivo salvo no Drive. Esta integração Trello não tem ação de
+   "anexar arquivo" de verdade — um comentário com o link do Drive é o equivalente
+   funcional.
+   - Se for o contrato e ainda não existir um cartão em `Contratos empreiteiro` para
+     esse fornecedor, criar um novo cartão lá (`Contrato <Fornecedor>`) antes de
+     comentar.
+   - **Não mover o cartão entre listas de pipeline sozinho** (ex. de "Coleta
+     aprovada" para "Aguardando entrega/ordem de serviço") — perguntar a Bruno antes,
+     é o indicador visual do andamento da obra dele e mudar sem avisar bagunça a
+     leitura do board.
+3. Entregar o mesmo arquivo via SendUserFile para download imediato.
+
+Se a obra ainda não tiver estrutura de pastas/board (obra nova), perguntar a Bruno em
+vez de inventar uma convenção nova.
+
 ## Estilo obrigatório
 - Técnico, direto, resumido. Sem recapitular passo a passo no resumo final.
 - Nunca inventar ou aproximar um dado que não veio do PDF, da ficha ou da OC. Campo
@@ -117,5 +159,5 @@ entregar "do jeito que deu".
 Mapa, OC e contrato preenchidos contêm CNPJ, endereço, dados pessoais (RG/CPF de
 representante) e valores comerciais de terceiros. **Nunca commitar esses arquivos
 preenchidos neste repositório** — só os templates em branco em `templates/` fazem
-parte do versionamento. Entregar os documentos preenchidos sempre via SendUserFile;
-onde Bruno guarda o arquivo depois (Drive, pasta local, etc.) é decisão dele.
+parte do versionamento. O destino oficial dos documentos preenchidos é o Google
+Drive + Trello da obra (Etapa 7), sempre também entregues via SendUserFile.
