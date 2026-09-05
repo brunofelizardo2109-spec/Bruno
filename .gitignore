@@ -1,0 +1,7 @@
+# Documentos preenchidos (mapa/OC/contrato reais) nunca entram no repo:
+# contêm CNPJ, endereço, dados pessoais e valores comerciais de terceiros.
+# Só os templates em branco em templates/ são versionados.
+/entregas/
+/obras/
+*.preenchido.xlsx
+*.preenchido.docx
