@@ -149,32 +149,46 @@ AskUserQuestion: **"Deseja que eu já emita a Ordem de Compra?"** (sim/não). Se
 **não**, parar aqui — o mapa já foi entregue, Bruno chama de novo quando quiser a
 OC. Se **sim**, seguir para a Etapa 4.
 
-### Etapa 4 — Ficha de dados do fornecedor
-Gerar uma tabela simples (pode ser no próprio chat ou uma planilha pequena) pedindo
-só o que falta para OC e contrato: razão social, CNPJ, endereço completo, responsável
-legal (nome/RG/CPF, para o contrato), responsável técnico/contato de obra, telefone,
-e-mail, prazo de entrega/execução acordado, condições de pagamento acordadas (nº de
-parcelas, valores, datas), banco/agência se houver faturamento direto. Esperar Bruno
-preencher antes de seguir.
-
-### Etapa 5 — Ordem de Compra
-Bruno mantém **um único arquivo de OC por obra**, com uma aba por ordem de compra
-(`OC001`, `OC002`, `OC003`, ...) — nunca um arquivo novo por fornecedor. O arquivo
-segue o padrão de nome `KASAP Engenharia_Ordem de Compra - Obra <NOME DA OBRA>.xlsx`
-e normalmente já existe na pasta da obra no Drive (ver Etapa 7). Antes de gerar:
+### Etapa 4 — Ordem de Compra (com os dados básicos que já temos)
+Decisão do Bruno: a OC sai **antes** da ficha de dados do fornecedor, usando só o
+que o mapa já trouxe — não esperar a ficha pra gerar a OC. Bruno mantém **um único
+arquivo de OC por obra**, com uma aba por ordem de compra (`OC001`, `OC002`,
+`OC003`, ...) — nunca um arquivo novo por fornecedor. O arquivo segue o padrão de
+nome `KASAP Engenharia_Ordem de Compra - Obra <NOME DA OBRA>.xlsx` e normalmente já
+existe na pasta da obra no Drive (ver Etapa 7). Antes de gerar:
 1. Localizar esse arquivo (Drive ou anexado por Bruno). Se não existir ainda para a
    obra, criar a partir de `templates/oc_modelo.xlsx`.
 2. Achar o próximo número de OC livre (maior `OCxxx` existente + 1).
 3. Duplicar a aba `OC001` (ou a última aba) dentro do próprio arquivo, renomear para
    `OCxxx`, e preencher: CONTRATANTE = dados do cliente/obra, COMPRADOR = Kasap
-   Engenharia (fixo), FORNECEDOR = dados da ficha da Etapa 4, itens = os itens do
-   fornecedor vencedor no mapa (descrição técnica completa, não resumida — lembrar que
-   nas linhas de item a coluna E é quantidade e F é unidade), parcelas de pagamento no
-   bloco de observações (texto real acordado, nunca o placeholder).
+   Engenharia (fixo), FORNECEDOR = **só a razão social** (a mesma já usada no mapa —
+   nome real da proposta, não é dado fictício), itens = os itens do fornecedor
+   vencedor no mapa (descrição técnica completa, não resumida — lembrar que nas
+   linhas de item a coluna E é quantidade e F é unidade). **CNPJ, endereço,
+   responsável e contato do fornecedor ficam explicitamente marcados como
+   "(pendente — ficha do fornecedor)"** — nunca inventar ou deixar em branco sem
+   marcar, porque isso vai ser completado na Etapa 5. Parcelas de pagamento no bloco
+   de observações só se Bruno já tiver passado as condições acordadas; senão, também
+   marcar como pendente.
 
-Depois de entregar a OC, usar AskUserQuestion: **"Deseja que eu já emita o
-contrato para essa prestação de serviço?"** (sim/não). Se **não**, parar aqui. Se
-**sim**, seguir para a Etapa 6.
+### Etapa 5 — Ficha de dados do fornecedor (pedida depois da OC, para o contrato)
+Gerar uma tabela simples (pode ser no próprio chat ou uma planilha pequena) pedindo
+o que falta: razão social (confirmar que bate com a da OC), CNPJ, endereço completo,
+responsável legal (nome/RG/CPF, para o contrato), responsável técnico/contato de
+obra, telefone, e-mail, prazo de entrega/execução acordado, condições de pagamento
+acordadas (nº de parcelas, valores, datas), banco/agência se houver faturamento
+direto. Deixar claro pra Bruno que esses dados servem tanto pro contrato quanto para
+completar a OC já emitida. Esperar ele preencher antes de seguir.
+
+Assim que a ficha vier preenchida: **voltar na aba `OCxxx` já gerada na Etapa 4 e
+substituir os campos "(pendente — ficha do fornecedor)"** pelos dados reais (CNPJ,
+endereço, responsável, contato, parcelas de pagamento) — reaplicar o checklist de
+qualidade visual do `.xlsx` nessa atualização, já que célula de fórmula/valor pode
+precisar de novo cache. Entregar a OC atualizada antes de seguir para o contrato.
+
+Depois, usar AskUserQuestion: **"Deseja que eu já emita o contrato para essa
+prestação de serviço?"** (sim/não). Se **não**, parar aqui. Se **sim**, seguir para
+a Etapa 6.
 
 ### Etapa 6 — Contrato
 Preencher `templates/contrato_modelo.docx`: CONTRATADA = dados da ficha, objeto/escopo
