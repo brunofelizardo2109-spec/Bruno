@@ -72,8 +72,8 @@ nunca aproximar "no chute"; reportar qualquer suposição feita). Antes de entre
 aplicar o checklist de qualidade visual abaixo. Entregar o arquivo.
 
 ### Checklist de qualidade visual do .xlsx (mapa e OC, sempre antes de entregar)
-Testado e validado no caso Prumus/item 15 — três bugs reais que passaram batido na
-primeira entrega:
+Testado e validado no caso Prumus/item 15 — bugs reais que passaram batido na
+primeira entrega e foram corrigidos numa segunda rodada:
 1. **Fórmula mostrando R$ 0,00 ou em branco**: o LibreOffice headless não funciona
    neste ambiente (`soffice --convert-to ...` falha até em arquivos triviais — não
    perder tempo tentando de novo, é limitação do sandbox). Sem recalcular, o
@@ -83,28 +83,65 @@ primeira entrega:
    XML junto da fórmula (o próprio `openpyxl` não expõe isso na API — precisa abrir
    o `.xlsx` como zip, achar o `<c r="CELULA">...<f>...</f></c>` na
    `xl/worksheets/sheetN.xml` e inserir `<v>VALOR</v>` antes de `</c>`). Fazer isso
-   para toda fórmula de subtotal/total que aparece no arquivo (mapa: `K` de cada
-   item, `J22`/`L22`/`N22`, `J25`/`L25`/`N25`; OC: `H` de cada item, `H38`, `H50`).
-   Depois, reabrir com `data_only=True` e conferir que os valores batem com a conta
-   manual — nunca entregar confiando só na fórmula sem essa conferência.
-2. **Linhas de item sem uso aparecendo em branco**: quando há menos itens do que
-   linhas no template (ex.: 1 item só), **ocultar** as linhas extras
-   (`ws.row_dimensions[r].hidden = True`) — nunca deletar (`delete_rows` quebra
-   merged cells e desloca fórmulas sem avisar, já visto no caso Vale dos
-   Cristais/KASAP) e nunca deixar visível em branco.
-3. **Texto de descrição "estourando" pra fora da linha**: célula com `wrapText=True`
-   mas linha com altura padrão (`row_dimensions[r].height = None`) só cabe uma
-   linha de texto — uma descrição técnica longa transborda visualmente pra fora do
-   desenho da célula em qualquer visualizador. Setar `row_dimensions[r].height`
-   explicitamente pra um valor generoso (~15pt por linha de texto esperada; para
-   descrição técnica típica de 3-5 linhas, 75-100pt) sempre que a descrição for mais
-   longa que uma linha curta. Alguns templates (a OC, por exemplo) já vêm com altura
-   generosa de fábrica — conferir antes de assumir que precisa mudar.
+   para toda fórmula de subtotal/total do arquivo. Depois, reabrir com
+   `data_only=True` e conferir que os valores batem com a conta manual — nunca
+   entregar confiando só na fórmula sem essa conferência.
+2. **Linhas de item sem uso**: quando há menos itens do que linhas no template
+   (ex.: 1 item só), **ocultar (`hidden = True`) não resolve** — o visualizador do
+   iPhone/Files do Bruno ignora esse atributo e mostra as linhas em branco do mesmo
+   jeito. A correção de verdade é **remover fisicamente** as linhas extras e
+   deslocar o rodapé (subtotal/desconto/frete/total/condições/observação) pra cima,
+   já que `delete_rows` sozinho quebra merged cells e não corrige fórmulas. O jeito
+   seguro (validado no mapa e na OC do caso Prumus):
+   1. Antes de mudar qualquer coisa, capturar do rodapé original: valor/fórmula de
+      cada célula, estilo (`font`/`fill`/`border`/`alignment`/`number_format`),
+      altura de cada linha, e todos os `merged_cells.ranges` que caem dentro do
+      rodapé (guardar) e dentro das linhas de item que vão sobrar sem uso
+      (só desfazer o merge, não precisa guardar).
+   2. Desfazer (`unmerge_cells`) todos os merges da região que vai ser descartada
+      (linhas de item não usadas + rodapé inteiro).
+   3. Limpar (`.value = None`) todas as células dessa região.
+   4. Reescrever o rodapé capturado nas novas linhas (`linha_original - deslocamento`,
+      onde `deslocamento = primeira_linha_do_rodapé - (primeira_linha_de_item +
+      qtd_itens_usados)`), reaplicando valor/estilo/altura.
+   5. Nas fórmulas reescritas, ajustar as referências de linha: números de linha
+      que caíam dentro do rodapé descontam o deslocamento; números de linha que
+      caíam no intervalo de itens (ex. `H32:H36`) colapsam para a única linha de
+      item usada (`H32:H32`); qualquer outra referência (ex. `D9`, `D23` — dados
+      fixos acima da tabela) fica igual.
+   6. Recriar os merges do rodapé nas linhas novas.
+   7. Injetar o cache de fórmula (item 1 deste checklist) e reabrir pra conferir.
+3. **Texto de descrição/condições "estourando" pra fora da linha**: célula com
+   `wrapText=True` mas linha com altura padrão (`row_dimensions[r].height = None`)
+   ou com `wrapText` nem definido só cabe uma linha de texto — um texto mais longo
+   transborda visualmente pra fora do desenho da célula em qualquer visualizador.
+   Conferir **toda** célula onde for escrever texto (descrição do item, condições
+   de entrega, condições de pagamento, observação) — não só a descrição do item —
+   e, se não tiver `wrapText=True` já no template, setar explicitamente
+   (`Alignment(wrap_text=True, ...)`, preservando `horizontal`/`vertical` originais)
+   e dar altura generosa (~15pt por linha esperada de texto). Alguns templates (a
+   OC, por exemplo) já vêm com altura generosa de fábrica — conferir antes de
+   assumir que precisa mudar.
+4. **Cotação única (só 1 fornecedor) no mapa**: as colunas do fornecedor 2 e do
+   fornecedor 3 (mapa: `L`/`M` e `N`/`O`) ficam **totalmente em branco** — sem
+   `[FORNECEDOR 2]`/`[FORNECEDOR 3]`, sem `R$ 0,00` nas linhas de subtotal/total,
+   sem o texto padrão de condições/observação do template. Limpar o valor de toda
+   célula dessas colunas do cabeçalho até o fim do bloco de observação (não só as
+   linhas de fórmula) — de novo, ocultar a coluna não é suficiente porque o
+   visualizador do Bruno não respeita coluna oculta; deixar realmente em branco
+   resolve nos dois casos.
+5. **Texto da Observação**: manter só a condição de pagamento (parcelas, valores,
+   datas) — nada de comentário extra (cotação única, validade da proposta, aviso
+   de dado fictício de teste). Esse tipo de nota, quando necessário, já está
+   marcado nos próprios campos do fornecedor (ex. "(FICTÍCIO)" ao lado de cada
+   dado) — não precisa repetir na Observação.
 
 Sem uma ferramenta de renderização neste ambiente, a única forma de "ver como
 ficou" é reabrir o arquivo salvo e inspecionar programaticamente: valores calculados
-(`data_only=True`), `row_dimensions[r].hidden` e `.height`, `column_dimensions[c].hidden`.
-Fazer essa inspeção sempre, não só quando o usuário reclamar.
+(`data_only=True`), conteúdo célula a célula da região de itens/rodapé, altura de
+linha, e `merged_cells.ranges`. Fazer essa inspeção sempre, não só quando o usuário
+reclamar — e não confiar em `hidden` pra esconder linha/coluna, já provou não
+funcionar no visualizador que o Bruno usa.
 
 ### Etapa 3 — Escolha do vencedor
 Perguntar qual fornecedor ganhou, se Bruno ainda não tiver dito. Em seguida, usar
