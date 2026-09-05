@@ -177,18 +177,13 @@ o que falta: razão social (confirmar que bate com a da OC), CNPJ, endereço com
 responsável legal (nome/RG/CPF, para o contrato), responsável técnico/contato de
 obra, telefone, e-mail, prazo de entrega/execução acordado, condições de pagamento
 acordadas (nº de parcelas, valores, datas), banco/agência se houver faturamento
-direto. Deixar claro pra Bruno que esses dados servem tanto pro contrato quanto para
-completar a OC já emitida. Esperar ele preencher antes de seguir.
+direto. Esperar ele preencher antes de seguir.
 
-Assim que a ficha vier preenchida: **voltar na aba `OCxxx` já gerada na Etapa 4 e
-substituir os campos "(pendente — ficha do fornecedor)"** pelos dados reais (CNPJ,
-endereço, responsável, contato, parcelas de pagamento) — reaplicar o checklist de
-qualidade visual do `.xlsx` nessa atualização, já que célula de fórmula/valor pode
-precisar de novo cache. Entregar a OC atualizada antes de seguir para o contrato.
-
-Depois, usar AskUserQuestion: **"Deseja que eu já emita o contrato para essa
-prestação de serviço?"** (sim/não). Se **não**, parar aqui. Se **sim**, seguir para
-a Etapa 6.
+Decisão do Bruno: **não voltar na OC** depois da ficha — os campos
+"(pendente — ficha do fornecedor)" ficam como estão na OC já emitida na Etapa 4; a
+ficha serve só para o contrato. Usar AskUserQuestion: **"Deseja que eu já emita o
+contrato para essa prestação de serviço?"** (sim/não). Se **não**, parar aqui. Se
+**sim**, seguir direto para a Etapa 6.
 
 ### Etapa 6 — Contrato
 Preencher `templates/contrato_modelo.docx`: CONTRATADA = dados da ficha, objeto/escopo
@@ -200,9 +195,12 @@ imagem) no lugar de "[Inserir aqui a imagem do demonstrativo / planilha de orça
 ### Gate final — Conferência cruzada (antes de entregar OC e contrato)
 Nunca entregar sem checar, e nunca ignorar silenciosamente uma inconsistência encontrada:
 - Valor total da OC == soma das parcelas descritas nas observações da OC.
-- Razão social, CNPJ e endereço do fornecedor idênticos, literalmente, entre ficha, OC
-  e contrato.
-- Prazo de entrega da OC == prazo de execução no contrato.
+- Razão social do fornecedor idêntica, literalmente, entre mapa, OC e contrato.
+  CNPJ/endereço da OC ficam como "(pendente — ficha do fornecedor)" por decisão do
+  Bruno (Etapa 5) — não é inconsistência, é esperado; conferir CNPJ/endereço só
+  entre ficha e contrato.
+- Prazo de execução do contrato == prazo combinado na ficha (a OC pode não ter esse
+  campo preenchido, já que foi emitida antes da ficha).
 - Escopo do contrato reflete a descrição técnica real dos itens da OC, não um texto
   genérico.
 
