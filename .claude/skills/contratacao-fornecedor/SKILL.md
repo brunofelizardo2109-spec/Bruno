@@ -39,6 +39,9 @@ conhecidas podem pular direto pro mapa). Se ele não disser nada, o padrão é *
 checar**.
 - Se **não**: pular a Etapa 1 e ir direto pra Etapa 2, sem perguntar de novo depois —
   a sequência daí pra frente é direta (mapa → pergunta OC → pergunta contrato).
+- Se **sim** (vai checar divergência): perguntar também **qual dos orçamentos é a
+  referência** (o que está no escopo/quantidade/unidade certos) — isso muda o
+  formato do relatório de divergência na Etapa 1.
 
 ### Etapa 1 — Gate de divergência (pular apenas se Bruno pedir explicitamente)
 Ler os PDFs inteiros (todas as páginas, com o Read tool — nunca confiar em resumo).
@@ -48,14 +51,27 @@ pagamento embutidas na proposta.
 
 - **Convergente** (nenhuma divergência relevante): avisar em 1 frase e seguir direto
   para a Etapa 2.
-- **Divergente**: não seguir sozinho. Gerar um relatório curto em tabela — item |
-  fornecedor A | fornecedor B | fornecedor C | tipo de divergência (item ausente /
-  quantidade diferente / unidade diferente / escopo diferente / prazo diferente) — e
-  usar AskUserQuestion com duas opções:
+- **Divergente**, com referência definida (o caso normal — Bruno vai copiar e mandar
+  cada texto direto pro fornecedor correspondente): **não montar uma tabela
+  comparativa única.** Gerar **um texto separado e autônomo por fornecedor
+  não-referência** (fornecedor 2, fornecedor 3), cada um citando só o que aquele
+  fornecedor específico tem de diferente frente à referência — sem mencionar os
+  outros fornecedores nem a existência de uma concorrência. Cada texto pronto pra
+  colar e enviar direto pra aquela empresa (ex.: "Identificamos as seguintes
+  divergências na proposta em relação ao escopo solicitado: ..."), listando item a
+  item o que está diferente (item ausente / quantidade diferente / unidade
+  diferente / escopo diferente / prazo diferente) e pedindo a atualização.
+- **Divergente**, sem referência definida (Bruno não apontou qual está certo): usar
+  o formato antigo de tabela comparativa única — item | fornecedor A | fornecedor B
+  | fornecedor C | tipo de divergência — já que não dá pra saber o que é "erro" sem
+  saber qual é a referência.
+
+Nos dois casos de divergência, depois de entregar o(s) relatório(s)/texto(s), usar
+AskUserQuestion com duas opções:
   1. **Prosseguir mesmo assim** → segue para a Etapa 2 usando os dados como estão,
      marcando no mapa quais itens ficaram divergentes.
-  2. **Vou corrigir com os fornecedores** → entregar o relatório pronto para Bruno
-     mandar aos fornecedores, e responder com a frase padrão **"Aguardo o envio dos
+  2. **Vou corrigir com os fornecedores** → entregar o(s) texto(s)/relatório pronto(s)
+     para Bruno mandar aos fornecedores, e responder com a frase padrão **"Aguardo o envio dos
      orçamentos corrigidos/equalizados."**, e parar aqui. Quando ele reanexar os
      orçamentos atualizados, repetir a Etapa 1 do zero nesse novo lote — é um loop:
      só sai dele quando os orçamentos convergirem ou quando Bruno escolher
