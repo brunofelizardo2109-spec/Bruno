@@ -38,6 +38,7 @@ CATEGORIAS = [
     "Vestuário",
     "Investimentos",
     "Dívidas e Financiamentos",
+    "Combustível Pessoal",
     "Outros",
 ]
 
@@ -134,20 +135,24 @@ def montar_renda(wb, renda):
 
 def montar_gastos_fixos(wb, fixos):
     ws = wb.create_sheet("GastosFixos")
-    ws.append(["Descrição", "Categoria", "Valor", "Dia vencimento", "Ativo"])
-    estilo_header(ws, 1, 5)
+    ws.append([
+        "Descrição", "Categoria", "Valor", "Dia vencimento", "Ativo",
+        "Previsão de término", "Observação",
+    ])
+    estilo_header(ws, 1, 7)
     for r in fixos:
         validar_categoria(r["categoria"].strip(), f"gastos_fixos.csv ({r['descricao']})")
         ws.append([
             r["descricao"], r["categoria"], to_float(r["valor"], "gastos_fixos.csv"),
             r["dia_vencimento"], r["ativo"],
+            r.get("data_termino_prevista", ""), r.get("observacao", ""),
         ])
-    for row in ws.iter_rows(min_row=2, max_row=ws.max_row, max_col=5):
+    for row in ws.iter_rows(min_row=2, max_row=ws.max_row, max_col=7):
         row[2].number_format = CURRENCY_FMT
         for c in row:
             c.border = BORDER
             c.font = Font(name=FONT_NAME)
-    autofit(ws, [32, 22, 14, 16, 8])
+    autofit(ws, [32, 22, 14, 16, 8, 18, 40])
     return len(fixos)
 
 

@@ -14,20 +14,25 @@ editada à mão. Ver `financeiro/README.md` para o schema completo de cada CSV.
 
 ## Categorias fixas (nunca inventar uma nova sem avisar)
 Moradia, Contas e Utilidades, Alimentação, Transporte, Saúde, Educação, Lazer
-e Assinaturas, Vestuário, Investimentos, Dívidas e Financiamentos, Outros.
+e Assinaturas, Vestuário, Investimentos, Dívidas e Financiamentos,
+Combustível Pessoal, Outros.
 
 Palavras-chave para inferir a categoria automaticamente (não perguntar se bater
 com confiança):
 - **Moradia**: aluguel, condomínio, IPTU, reforma da casa
 - **Contas e Utilidades**: luz, água, gás, internet, telefone, celular
 - **Alimentação**: mercado, supermercado, ifood, restaurante, padaria, feira
-- **Transporte**: uber, 99, combustível, gasolina, estacionamento, manutenção do carro, pedágio
+- **Transporte**: uber, 99, estacionamento, manutenção do carro, pedágio (gasolina de USO PESSOAL vai em Combustível Pessoal, não aqui — ver abaixo)
 - **Saúde**: plano de saúde, farmácia, consulta, exame, academia, dentista
 - **Educação**: curso, faculdade, livro, material escolar
 - **Lazer e Assinaturas**: netflix, spotify, cinema, bar, viagem, streaming
-- **Vestuário**: roupa, tênis, calçado
+- **Vestuário**: roupa, calçado
 - **Investimentos**: aplicação, CDB, tesouro direto, ações, previdência
 - **Dívidas e Financiamentos**: fatura do cartão, empréstimo, financiamento, parcela
+- **Combustível Pessoal**: gasolina/combustível para uso pessoal (tem teto de
+  orçamento próprio — ver `financeiro/orcamentos.csv`). Se Bruno mencionar
+  gasolina sem dizer se é pessoal ou de trabalho (reembolsável), perguntar —
+  gasolina de trabalho não é gasto dele, não entra em lancamentos.csv.
 
 Se a descrição não bater com nenhuma palavra-chave com confiança, perguntar com
 `AskUserQuestion` oferecendo a lista fixa de categorias — nunca chutar uma
@@ -58,6 +63,12 @@ Bruno manda algo como "gastei 450 no mercado hoje" ou "paguei 120 de uber ontem"
 - **Cancelamento** ("cancelei a academia"): setar `ativo=nao` na linha
   correspondente. Nunca apagar a linha — isso destrói o histórico do que já
   foi pago antes do cancelamento.
+- **Financiamento/parcelamento com fim previsto** (ex.: carro, pós-graduação):
+  preencher `data_termino_prevista` (`AAAA-MM`) quando Bruno souber uma
+  estimativa, e usar `observacao` para registrar contexto relevante (ex.:
+  valor real da parcela vs. valor que ele está pagando a mais para quitar
+  antes). Isso não desativa nada sozinho — quando o mês chegar, perguntar a
+  Bruno se já quitou e, se sim, marcar `ativo=nao`.
 - Commitar e dar push imediato. Confirmar em uma frase.
 
 ## Cadastrar/alterar renda

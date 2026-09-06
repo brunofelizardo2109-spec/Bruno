@@ -30,6 +30,8 @@ de gerar. Colunas:
 | `valor` | número com ponto decimal |
 | `dia_vencimento` | dia do mês (1-31) |
 | `ativo` | `sim` / `nao` — gasto fixo inativo entra no histórico mas some da projeção do mês |
+| `data_termino_prevista` | `AAAA-MM`, opcional — só para gastos com fim definido (ex.: financiamento/parcelamento). Estimativa, não recálculo automático: quando o mês passar, revisar e marcar `ativo=nao` na mão. |
+| `observacao` | texto livre, opcional — usar para registrar contexto que não cabe nas outras colunas (ex.: valor real da parcela vs. valor pago para quitar mais rápido) |
 
 ### `renda.csv` — fontes de renda com valor fixo conhecido de antemão
 Só entra aqui renda cujo valor não muda mês a mês (salário). Colunas:
@@ -68,7 +70,13 @@ definido; as demais aparecem sem teto na planilha.
 
 ## Categorias fixas (não criar categoria nova sem avisar)
 Moradia, Contas e Utilidades, Alimentação, Transporte, Saúde, Educação, Lazer
-e Assinaturas, Vestuário, Investimentos, Dívidas e Financiamentos, Outros.
+e Assinaturas, Vestuário, Investimentos, Dívidas e Financiamentos,
+Combustível Pessoal, Outros.
+
+`Combustível Pessoal` existe separada de `Transporte` de propósito: gasolina
+de uso pessoal tem teto de orçamento próprio (`orcamentos.csv`) e não pode
+misturar com Uber/pedágio/manutenção nem com eventual gasolina de trabalho
+lançada em `Transporte`.
 
 Taxonomia fixa por consistência: categoria livre por lançamento inviabiliza
 comparar mês a mês. Se uma categoria nova for realmente necessária, ela entra
