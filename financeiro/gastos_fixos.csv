@@ -1,9 +1,9 @@
 descricao,categoria,valor,dia_vencimento,ativo,data_termino_prevista,observacao
-Parcela do carro,Dívidas e Financiamentos,2300.00,6,sim,2027-09,"Parcela contratual real é R$ 1.050; pagando R$ 2.300 (3 parcelas por mês) para reduzir juros e quitar mais rápido. Previsão de quitação: 12 meses a partir de set/2026 (estimativa)."
+Parcela do carro,Dívidas e Financiamentos,2300.00,6,sim,2027-09,"Parcela contratual real é R$ 1.050; pagando R$ 2.300 (3 parcelas por mês) para reduzir juros e quitar mais rápido. Confirmado por Bruno: estratégia já em andamento, gerando economia de R$ 800/mês em juros que ele deixaria de pagar. Previsão de quitação: 12 meses a partir de set/2026 (confirmado)."
 Seguro,Transporte,250.00,6,sim,,
 Tênis,Lazer e Assinaturas,210.00,10,sim,,
 Aula de inglês,Educação,270.00,1,sim,,
-Pós graduação,Educação,1100.00,15,sim,2027-09,"Pagando 2 parcelas por mês para quitar mais rápido. Previsão de quitação: 12 meses a partir de set/2026 (estimativa)."
+Pós graduação,Educação,1100.00,15,sim,2027-09,"Pagando 2 parcelas por mês para quitar mais rápido. Previsão de quitação: 12 meses a partir de set/2026 (confirmado)."
 Plano de saúde,Saúde,350.00,10,sim,,
 Poupança Austrália,Investimentos,2000.00,10,sim,,
 Poupança aposentadoria,Investimentos,1000.00,10,sim,,
