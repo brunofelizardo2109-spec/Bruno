@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 """Gera a planilha .xlsx mensal do organizador financeiro a partir dos CSVs
-em financeiro/ (lancamentos.csv, gastos_fixos.csv, renda.csv).
+em financeiro/ (lancamentos.csv, gastos_fixos.csv, renda.csv, renda_variavel.csv).
 
 Uso:
     python3 scripts/gerar_planilha_mensal.py --mes 9 --ano 2026 --out /tmp/saida.xlsx
 
 Os CSVs são a única fonte de verdade. Este script nunca escreve neles —
 só lê e gera o relatório do mês pedido.
+
+renda.csv guarda só fontes com valor fixo conhecido de antemão (salário).
+Renda de valor variável (reembolso, freelance) não cabe numa linha estática
+com um único `valor` — entra em renda_variavel.csv como lançamento por mês,
+no mesmo espírito de lancamentos.csv.
 """
 import argparse
 import csv
@@ -80,15 +85,16 @@ def eh_ativo(valor):
     return (valor or "").strip().lower() == "sim"
 
 
-def filtrar_mes(lancamentos, ano, mes):
+def filtrar_mes(linhas, ano, mes, arquivo, exigir_categoria=False):
     saida = []
-    for row in lancamentos:
+    for row in linhas:
         try:
             d = date.fromisoformat(row["data"].strip())
         except ValueError:
-            raise ValueError(f"Data inválida em lancamentos.csv: {row!r}")
+            raise ValueError(f"Data inválida em {arquivo}: {row!r}")
         if d.year == ano and d.month == mes:
-            validar_categoria(row["categoria"].strip(), f"lancamentos.csv ({row['data']})")
+            if exigir_categoria:
+                validar_categoria(row["categoria"].strip(), f"{arquivo} ({row['data']})")
             saida.append(row)
     saida.sort(key=lambda r: r["data"])
     return saida
@@ -145,6 +151,24 @@ def montar_gastos_fixos(wb, fixos):
     return len(fixos)
 
 
+def montar_renda_variavel(wb, renda_var_mes):
+    ws = wb.create_sheet("RendaVariavel")
+    ws.append(["Data", "Descrição", "Valor", "Observação"])
+    estilo_header(ws, 1, 4)
+    for r in renda_var_mes:
+        ws.append([
+            r["data"], r["descricao"], to_float(r["valor"], "renda_variavel.csv"),
+            r.get("observacao", ""),
+        ])
+    for row in ws.iter_rows(min_row=2, max_row=ws.max_row, max_col=4):
+        row[2].number_format = CURRENCY_FMT
+        for c in row:
+            c.border = BORDER
+            c.font = Font(name=FONT_NAME)
+    autofit(ws, [12, 32, 14, 30])
+    return len(renda_var_mes)
+
+
 def montar_lancamentos(wb, lancamentos_mes):
     ws = wb.create_sheet("Lancamentos")
     ws.append(["Data", "Categoria", "Descrição", "Valor", "Forma pagamento", "Observação"])
@@ -164,7 +188,10 @@ def montar_lancamentos(wb, lancamentos_mes):
     return len(lancamentos_mes)
 
 
-def montar_resumo(wb, mes, ano, renda, fixos, lancamentos_mes, n_renda, n_fixos, n_lanc):
+def montar_resumo(
+    wb, mes, ano, renda, fixos, lancamentos_mes, renda_var_mes,
+    n_renda, n_fixos, n_lanc, n_renda_var,
+):
     """Cria a aba Resumo com fórmulas reais (SUMIFS/SUMIF), e devolve um
     dicionário {(aba, célula): valor} para injeção de cache — ver
     inject_formula_cache() sobre por que isso é necessário neste ambiente."""
@@ -182,15 +209,22 @@ def montar_resumo(wb, mes, ano, renda, fixos, lancamentos_mes, n_renda, n_fixos,
     fixos_ativo_range = f"GastosFixos!E2:E{max(2, 1 + n_fixos)}"
     lanc_range = f"Lancamentos!D2:D{max(2, 1 + n_lanc)}"
     lanc_cat_range = f"Lancamentos!B2:B{max(2, 1 + n_lanc)}"
+    renda_var_range = f"RendaVariavel!C2:C{max(2, 1 + n_renda_var)}"
 
-    total_renda = sum(to_float(r["valor"], "renda.csv") for r in renda if eh_ativo(r["ativo"]))
+    total_renda_fixa = sum(to_float(r["valor"], "renda.csv") for r in renda if eh_ativo(r["ativo"]))
+    total_renda_variavel = sum(to_float(r["valor"], "renda_variavel.csv") for r in renda_var_mes)
+    total_renda = total_renda_fixa + total_renda_variavel
     total_fixos = sum(to_float(r["valor"], "gastos_fixos.csv") for r in fixos if eh_ativo(r["ativo"]))
     total_variavel = sum(to_float(r["valor"], "lancamentos.csv") for r in lancamentos_mes)
     total_saidas = total_fixos + total_variavel
     saldo = total_renda - total_saidas
 
     linhas = [
-        ("Renda total (ativa)", f"=SUMIFS({renda_range},{renda_ativo_range},\"sim\")", total_renda),
+        (
+            "Renda total (fixa ativa + variável do mês)",
+            f"=SUMIFS({renda_range},{renda_ativo_range},\"sim\")+SUM({renda_var_range})",
+            total_renda,
+        ),
         ("Gastos fixos (ativos)", f"=SUMIFS({fixos_range},{fixos_ativo_range},\"sim\")", total_fixos),
         ("Gastos variáveis do mês", f"=SUM({lanc_range})", total_variavel),
         ("Total de saídas", "=B4+B5", total_saidas),
@@ -334,7 +368,9 @@ def gerar(mes, ano, saida):
     renda = ler_csv("renda.csv")
     fixos = ler_csv("gastos_fixos.csv")
     lancamentos = ler_csv("lancamentos.csv")
-    lancamentos_mes = filtrar_mes(lancamentos, ano, mes)
+    renda_variavel = ler_csv("renda_variavel.csv")
+    lancamentos_mes = filtrar_mes(lancamentos, ano, mes, "lancamentos.csv", exigir_categoria=True)
+    renda_var_mes = filtrar_mes(renda_variavel, ano, mes, "renda_variavel.csv")
 
     wb = Workbook()
     wb.remove(wb.active)
@@ -342,7 +378,11 @@ def gerar(mes, ano, saida):
     n_renda = montar_renda(wb, renda)
     n_fixos = montar_gastos_fixos(wb, fixos)
     n_lanc = montar_lancamentos(wb, lancamentos_mes)
-    cache = montar_resumo(wb, mes, ano, renda, fixos, lancamentos_mes, n_renda, n_fixos, n_lanc)
+    n_renda_var = montar_renda_variavel(wb, renda_var_mes)
+    cache = montar_resumo(
+        wb, mes, ano, renda, fixos, lancamentos_mes, renda_var_mes,
+        n_renda, n_fixos, n_lanc, n_renda_var,
+    )
 
     saida = Path(saida)
     saida.parent.mkdir(parents=True, exist_ok=True)

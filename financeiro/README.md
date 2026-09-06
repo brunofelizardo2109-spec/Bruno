@@ -31,14 +31,28 @@ de gerar. Colunas:
 | `dia_vencimento` | dia do mês (1-31) |
 | `ativo` | `sim` / `nao` — gasto fixo inativo entra no histórico mas some da projeção do mês |
 
-### `renda.csv` — fontes de renda
+### `renda.csv` — fontes de renda com valor fixo conhecido de antemão
+Só entra aqui renda cujo valor não muda mês a mês (salário). Colunas:
+
 | Coluna | Formato |
 |---|---|
 | `descricao` | texto livre |
 | `valor` | número com ponto decimal |
 | `dia_recebimento` | dia do mês (1-31) |
-| `tipo` | `fixo` ou `variavel` |
+| `tipo` | `fixo` (única opção válida hoje — ver `renda_variavel.csv` abaixo) |
 | `ativo` | `sim` / `nao` |
+
+### `renda_variavel.csv` — renda de valor variável, um lançamento por mês
+Renda cujo valor muda todo mês (reembolso, freelance, bônus) não cabe numa
+linha estática com um único `valor` — por isso é lançamento a lançamento,
+igual a `lancamentos.csv`, filtrado por mês na hora de gerar a planilha.
+
+| Coluna | Formato |
+|---|---|
+| `data` | `AAAA-MM-DD` |
+| `descricao` | texto livre (ex.: `Reembolso gasolina`) |
+| `valor` | número com ponto decimal |
+| `observacao` | texto livre, opcional |
 
 ## Categorias fixas (não criar categoria nova sem avisar)
 Moradia, Contas e Utilidades, Alimentação, Transporte, Saúde, Educação, Lazer

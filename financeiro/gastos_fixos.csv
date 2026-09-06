@@ -1,1 +1,15 @@
 descricao,categoria,valor,dia_vencimento,ativo
+Parcela do carro,Dívidas e Financiamentos,2300.00,6,sim
+Seguro,Transporte,250.00,6,sim
+Tênis,Lazer e Assinaturas,210.00,10,sim
+Aula de inglês,Educação,270.00,1,sim
+Pós graduação,Educação,650.00,15,sim
+Plano de saúde,Saúde,350.00,10,sim
+Poupança Austrália,Investimentos,1500.00,10,sim
+Poupança aposentadoria,Investimentos,500.00,10,sim
+Apple TV,Lazer e Assinaturas,29.90,13,sim
+iCloud,Lazer e Assinaturas,19.90,10,sim
+HBO,Lazer e Assinaturas,44.90,2,sim
+Prime,Lazer e Assinaturas,40.00,10,sim
+Netflix,Lazer e Assinaturas,59.90,26,sim
+Disney,Lazer e Assinaturas,70.00,10,sim

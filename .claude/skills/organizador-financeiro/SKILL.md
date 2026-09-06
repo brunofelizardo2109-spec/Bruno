@@ -60,10 +60,19 @@ Bruno manda algo como "gastei 450 no mercado hoje" ou "paguei 120 de uber ontem"
   foi pago antes do cancelamento.
 - Commitar e dar push imediato. Confirmar em uma frase.
 
-## Cadastrar/alterar renda (`financeiro/renda.csv`)
-Mesmo padrão do gasto fixo: descrição, valor, dia de recebimento, tipo (`fixo`
-para salário, `variavel` para freelance/bônus). Alteração de valor atualiza a
-linha existente; renda que parou de existir vira `ativo=nao`, nunca é apagada.
+## Cadastrar/alterar renda
+`renda.csv` (valor fixo, ex.: salário) e `renda_variavel.csv` (valor muda todo
+mês, ex.: reembolso, freelance) são coisas diferentes — nunca forçar renda
+variável numa linha de `renda.csv` só porque "ele recebe isso todo mês": o que
+varia é o valor, não a existência da fonte.
+- **Renda fixa nova/alterada** ("recebo salário de 10000 todo dia 5"): mesmo
+  padrão do gasto fixo em `renda.csv` — descrição, valor, dia de recebimento,
+  `tipo=fixo`. Alteração de valor atualiza a linha existente; renda que parou
+  de existir vira `ativo=nao`, nunca é apagada.
+- **Renda variável do mês** ("recebi 320 de reembolso de gasolina"): vira uma
+  linha nova em `renda_variavel.csv` (data, descrição, valor), do mesmo jeito
+  que um gasto variável vira linha em `lancamentos.csv` — nunca tentar
+  resumir numa única linha "fixa", porque o valor muda mês a mês.
 Commitar e dar push imediato. Confirmar em uma frase.
 
 ## Commit e push (depois de CADA registro/alteração, sem exceção)
