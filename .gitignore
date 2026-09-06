@@ -5,3 +5,7 @@
 /obras/
 *.preenchido.xlsx
 *.preenchido.docx
+
+# Python
+__pycache__/
+*.pyc
