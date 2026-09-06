@@ -54,6 +54,18 @@ igual a `lancamentos.csv`, filtrado por mês na hora de gerar a planilha.
 | `valor` | número com ponto decimal |
 | `observacao` | texto livre, opcional |
 
+### `orcamentos.csv` — teto de gasto mensal por categoria (opcional)
+Não é um gasto — é um limite de referência para comparar com o que a
+categoria realmente gastou no mês (coluna "Saldo do teto" no Resumo, negativo
+e destacado quando estoura). Só precisa de linha para categorias com teto
+definido; as demais aparecem sem teto na planilha.
+
+| Coluna | Formato |
+|---|---|
+| `categoria` | uma das categorias fixas abaixo |
+| `teto_mensal` | número com ponto decimal |
+| `ativo` | `sim` / `nao` |
+
 ## Categorias fixas (não criar categoria nova sem avisar)
 Moradia, Contas e Utilidades, Alimentação, Transporte, Saúde, Educação, Lazer
 e Assinaturas, Vestuário, Investimentos, Dívidas e Financiamentos, Outros.

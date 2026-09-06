@@ -75,6 +75,16 @@ varia é o valor, não a existência da fonte.
   resumir numa única linha "fixa", porque o valor muda mês a mês.
 Commitar e dar push imediato. Confirmar em uma frase.
 
+## Teto de orçamento por categoria (`financeiro/orcamentos.csv`) — não é gasto fixo
+Se Bruno pedir um limite/teto mensal pra uma categoria ("quero gastar no
+máximo 1000 em lazer"), isso **não** é um gasto fixo (não é uma cobrança real
+que sai da conta) — é uma linha em `orcamentos.csv` (categoria, teto_mensal,
+ativo). A planilha mensal compara o teto com o gasto variável real daquela
+categoria e mostra o saldo, destacando em vermelho quando estoura. Se a
+intenção dele for ambígua (pode ser gasto fixo real ou pode ser teto),
+perguntar antes de cadastrar — são coisas com efeito bem diferente no saldo
+do mês. Mesmo padrão de commit e push imediato.
+
 ## Commit e push (depois de CADA registro/alteração, sem exceção)
 ```
 git add financeiro/<arquivo>.csv

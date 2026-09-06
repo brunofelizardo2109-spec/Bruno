@@ -169,6 +169,33 @@ def montar_renda_variavel(wb, renda_var_mes):
     return len(renda_var_mes)
 
 
+def montar_orcamentos(wb, orcamentos):
+    """Teto de orçamento por categoria — não é um gasto que sai da conta,
+    é um limite de referência pra comparar com o gasto variável real.
+    Devolve {categoria: (número da linha, valor)} só para os tetos ativos,
+    usado pela aba Resumo para referenciar a célula certa sem reabrir o
+    workbook."""
+    ws = wb.create_sheet("Orcamentos")
+    ws.append(["Categoria", "Teto mensal", "Ativo"])
+    estilo_header(ws, 1, 3)
+    orcamento_por_categoria = {}
+    linha = 2
+    for r in orcamentos:
+        validar_categoria(r["categoria"].strip(), f"orcamentos.csv ({r['categoria']})")
+        valor = to_float(r["teto_mensal"], "orcamentos.csv")
+        ws.append([r["categoria"], valor, r["ativo"]])
+        if eh_ativo(r["ativo"]):
+            orcamento_por_categoria[r["categoria"]] = (linha, valor)
+        linha += 1
+    for row in ws.iter_rows(min_row=2, max_row=ws.max_row, max_col=3):
+        row[1].number_format = CURRENCY_FMT
+        for c in row:
+            c.border = BORDER
+            c.font = Font(name=FONT_NAME)
+    autofit(ws, [30, 14, 8])
+    return orcamento_por_categoria
+
+
 def montar_lancamentos(wb, lancamentos_mes):
     ws = wb.create_sheet("Lancamentos")
     ws.append(["Data", "Categoria", "Descrição", "Valor", "Forma pagamento", "Observação"])
@@ -190,7 +217,7 @@ def montar_lancamentos(wb, lancamentos_mes):
 
 def montar_resumo(
     wb, mes, ano, renda, fixos, lancamentos_mes, renda_var_mes,
-    n_renda, n_fixos, n_lanc, n_renda_var,
+    n_renda, n_fixos, n_lanc, n_renda_var, orcamento_por_categoria,
 ):
     """Cria a aba Resumo com fórmulas reais (SUMIFS/SUMIF), e devolve um
     dicionário {(aba, célula): valor} para injeção de cache — ver
@@ -248,10 +275,11 @@ def montar_resumo(
     linha = 10
     ws.cell(row=linha, column=1, value="Gastos variáveis por categoria").font = SECTION_FONT
     linha += 1
-    ws.cell(row=linha, column=1, value="Categoria")
-    ws.cell(row=linha, column=2, value="Valor")
-    ws.cell(row=linha, column=3, value="% do variável")
-    estilo_header(ws, linha, 3)
+    for col, titulo in enumerate(
+        ["Categoria", "Valor", "% do variável", "Teto mensal", "Saldo do teto"], start=1
+    ):
+        ws.cell(row=linha, column=col, value=titulo)
+    estilo_header(ws, linha, 5)
     linha += 1
 
     categorias_por_valor = {}
@@ -278,12 +306,26 @@ def montar_resumo(
         cell_pct.number_format = PCT_FMT
         cache[("Resumo", cell_pct.coordinate)] = round(pct, 4)
 
-        for c in range(1, 4):
+        orcamento = orcamento_por_categoria.get(categoria)
+        if orcamento is not None:
+            linha_teto, teto_valor = orcamento
+            cell_teto = ws.cell(row=linha, column=4, value=f"=Orcamentos!B{linha_teto}")
+            cell_teto.number_format = CURRENCY_FMT
+            cache[("Resumo", cell_teto.coordinate)] = teto_valor
+
+            saldo_teto = round(teto_valor - valor_cat, 2)
+            cell_saldo_teto = ws.cell(row=linha, column=5, value=f"=D{linha}-B{linha}")
+            cell_saldo_teto.number_format = CURRENCY_FMT
+            cache[("Resumo", cell_saldo_teto.coordinate)] = saldo_teto
+            if saldo_teto < 0:
+                cell_saldo_teto.fill = NEGATIVO_FILL
+
+        for c in range(1, 6):
             ws.cell(row=linha, column=c).border = BORDER
             ws.cell(row=linha, column=c).font = Font(name=FONT_NAME)
         linha += 1
 
-    autofit(ws, [30, 16, 14])
+    autofit(ws, [30, 16, 14, 14, 14])
     return cache
 
 
@@ -369,6 +411,7 @@ def gerar(mes, ano, saida):
     fixos = ler_csv("gastos_fixos.csv")
     lancamentos = ler_csv("lancamentos.csv")
     renda_variavel = ler_csv("renda_variavel.csv")
+    orcamentos = ler_csv("orcamentos.csv")
     lancamentos_mes = filtrar_mes(lancamentos, ano, mes, "lancamentos.csv", exigir_categoria=True)
     renda_var_mes = filtrar_mes(renda_variavel, ano, mes, "renda_variavel.csv")
 
@@ -379,9 +422,10 @@ def gerar(mes, ano, saida):
     n_fixos = montar_gastos_fixos(wb, fixos)
     n_lanc = montar_lancamentos(wb, lancamentos_mes)
     n_renda_var = montar_renda_variavel(wb, renda_var_mes)
+    orcamento_por_categoria = montar_orcamentos(wb, orcamentos)
     cache = montar_resumo(
         wb, mes, ano, renda, fixos, lancamentos_mes, renda_var_mes,
-        n_renda, n_fixos, n_lanc, n_renda_var,
+        n_renda, n_fixos, n_lanc, n_renda_var, orcamento_por_categoria,
     )
 
     saida = Path(saida)
