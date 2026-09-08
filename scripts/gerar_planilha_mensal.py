@@ -39,7 +39,7 @@ CATEGORIAS = [
     "Investimentos",
     "Dívidas e Financiamentos",
     "Combustível Pessoal",
-    "Outros",
+    "Gastos Variados",
 ]
 
 MESES_PT = [

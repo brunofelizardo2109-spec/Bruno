@@ -15,7 +15,7 @@ editada à mão. Ver `financeiro/README.md` para o schema completo de cada CSV.
 ## Categorias fixas (nunca inventar uma nova sem avisar)
 Moradia, Contas e Utilidades, Alimentação, Transporte, Saúde, Educação, Lazer
 e Assinaturas, Vestuário, Investimentos, Dívidas e Financiamentos,
-Combustível Pessoal, Outros.
+Combustível Pessoal, Gastos Variados.
 
 Palavras-chave para inferir a categoria automaticamente (não perguntar se bater
 com confiança):
@@ -34,9 +34,27 @@ com confiança):
   gasolina sem dizer se é pessoal ou de trabalho (reembolsável), perguntar —
   gasolina de trabalho não é gasto dele, não entra em lancamentos.csv.
 
-Se a descrição não bater com nenhuma palavra-chave com confiança, perguntar com
-`AskUserQuestion` oferecendo a lista fixa de categorias — nunca chutar uma
-categoria só para não perguntar.
+Se a descrição não bater com nenhuma palavra-chave com confiança, **não
+perguntar** — lançar em `Gastos Variados` direto e seguir o fluxo (decisão do
+Bruno: prefere não ser interrompido por causa de categorização, e revisa isso
+tudo de uma vez no fechamento do mês). Continua valendo perguntar só quando
+faltar um dado que não dá pra registrar sem inventar (valor, data, categoria
+explícita de gasto fixo/renda) — isso é uma coisa diferente de "qual
+categoria" e não muda.
+
+## Revisão de `Gastos Variados` no fechamento do mês
+`Gastos Variados` é uma categoria de trânsito, não permanente — antes de
+gerar a planilha do mês (ou quando Bruno pedir "fecha o mês"), checar
+`financeiro/lancamentos.csv` por linhas com essa categoria no período e:
+1. Listar essas linhas pra Bruno (descrição + valor) e perguntar a categoria
+   real de cada uma.
+2. Atualizar a linha em `lancamentos.csv` com a categoria correta (nunca
+   duplicar a linha).
+3. Commitar e dar push com uma mensagem tipo `financeiro: revisão de fim de
+   mês - recategoriza N lançamentos`.
+Só depois disso gerar a planilha. Se Bruno pedir a planilha sem dar tempo pra
+essa revisão, perguntar se quer revisar antes ou seguir com o que estiver
+pendente em Gastos Variados mesmo.
 
 ## Registrar um gasto variável (`financeiro/lancamentos.csv`)
 Bruno manda algo como "gastei 450 no mercado hoje" ou "paguei 120 de uber ontem".

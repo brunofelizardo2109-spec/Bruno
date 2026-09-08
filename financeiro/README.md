@@ -71,12 +71,19 @@ definido; as demais aparecem sem teto na planilha.
 ## Categorias fixas (não criar categoria nova sem avisar)
 Moradia, Contas e Utilidades, Alimentação, Transporte, Saúde, Educação, Lazer
 e Assinaturas, Vestuário, Investimentos, Dívidas e Financiamentos,
-Combustível Pessoal, Outros.
+Combustível Pessoal, Gastos Variados.
 
 `Combustível Pessoal` existe separada de `Transporte` de propósito: gasolina
 de uso pessoal tem teto de orçamento próprio (`orcamentos.csv`) e não pode
 misturar com Uber/pedágio/manutenção nem com eventual gasolina de trabalho
 lançada em `Transporte`.
+
+`Gastos Variados` é a categoria "estacionamento" — todo lançamento que não
+bate com confiança em nenhuma categoria específica cai aqui, sem interromper
+Bruno pra perguntar na hora. Ela é revisada e esvaziada no fechamento do mês
+(ver skill `organizador-financeiro`), não é uma categoria permanente pra
+gasto nenhum — se um item continuar sem categoria clara depois da revisão,
+só então fica ali em definitivo.
 
 Taxonomia fixa por consistência: categoria livre por lançamento inviabiliza
 comparar mês a mês. Se uma categoria nova for realmente necessária, ela entra
