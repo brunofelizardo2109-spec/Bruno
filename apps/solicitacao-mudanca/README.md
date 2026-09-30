@@ -1,7 +1,7 @@
 # Agente de Solicitação de Mudança — Grupo A
 
 Formulário próprio → Gemini sugere tipo, dimensões e resumo → linha nova no
-[Log de Solicitações - Grupo A](https://docs.google.com/spreadsheets/d/1c_RtRyhsDIeHzxEcknnD4yoeySHKsbz3wkpyvEyQqgg/edit).
+planilha **Log de Solicitações - Grupo A** (link fora do repositório, que é público).
 Mesmo fluxo do guia (n8n), rodando em Google Apps Script: sem trial, sem mensalidade, chave fora do código.
 **A IA sugere; o CCB decide.**
 
@@ -40,8 +40,14 @@ Mesmo fluxo do guia (n8n), rodando em Google Apps Script: sem trial, sem mensali
 - Colunas A–F avisam antes de edição; G–I (IA) em amarelo; Status com lista fechada.
 - Plano gratuito do Gemini pode usar o conteúdo enviado: só dados fictícios/não sensíveis.
 
-## Domínio próprio (opcional)
+## Endereço gratuito (GitHub Pages)
 
-A URL `script.google.com/macros/s/.../exec` é longa. Para um endereço do grupo:
-Google Sites (gratuito, `sites.google.com/view/grupo-a-mudancas`) com o app incorporado, ou domínio comprado
-(ex.: Registro.br) apontando para o Site. Encurtadores de link não são recomendados: escondem o destino.
+`https://brunofelizardo2109-spec.github.io/Bruno/` → `site/index.html`, publicado no branch `gh-pages`.
+O site só tem HTML; ele manda o pedido para a URL `/exec` do Apps Script (`doPost`), que chama o Gemini e grava na planilha.
+
+1. GitHub → repositório → **Settings → Pages** → *Deploy from a branch* → `gh-pages` / `(root)` → Save.
+2. Troque `COLE_AQUI_A_URL_EXEC` em `site/index.html` (e no branch `gh-pages`) pela URL `/exec` do passo 6.
+3. Toda mudança no `Code.gs` exige **Nova versão** da implantação; a URL `/exec` se mantém.
+
+Trocar de planilha (ex.: sair do Drive da Kasap para o pessoal): abra a nova planilha → Apps Script → repita os passos 2–6
+e troque a URL `/exec` no site. O endereço do GitHub Pages não muda.

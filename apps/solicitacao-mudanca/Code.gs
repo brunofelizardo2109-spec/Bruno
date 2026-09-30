@@ -42,6 +42,18 @@ function doGet() {
 
 /* ---------- Envio (chamado pelo formulário) ---------- */
 
+// Entrada do site externo (GitHub Pages). O navegador manda text/plain para evitar preflight de CORS.
+function doPost(e) {
+  let saida;
+  try {
+    const form = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    saida = registrarSolicitacao(form);
+  } catch (err) {
+    saida = { ok: false, erro: err && err.message ? err.message : 'Falha ao registrar.' };
+  }
+  return ContentService.createTextOutput(JSON.stringify(saida)).setMimeType(ContentService.MimeType.JSON);
+}
+
 function registrarSolicitacao(form) {
   const dados = validar_(form);
   frearSpam_();
