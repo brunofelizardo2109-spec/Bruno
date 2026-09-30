@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+  :root { --bg:#f4f6f9; --card:#fff; --ink:#1b2430; --muted:#5b6675; --line:#d5dbe3; --brand:#1f3a5f; --ok:#1e7a46; --err:#b3261e; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#12161c; --card:#1b2129; --ink:#e7ebf0; --muted:#9aa5b3; --line:#323b47; --brand:#7fa7d9; --ok:#5cc98a; --err:#ff8a80; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  main { max-width:640px; margin:0 auto; padding:24px 16px 48px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:24px; }
+  h1 { font-size:1.35rem; margin:0 0 4px; color:var(--brand); }
+  .sub { margin:0 0 20px; color:var(--muted); font-size:.95rem; }
+  label { display:block; font-weight:600; margin:16px 0 6px; }
+  input, textarea, select { width:100%; font:inherit; color:inherit; background:transparent; border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
+  textarea { min-height:110px; resize:vertical; }
+  input:focus, textarea:focus, select:focus { outline:2px solid var(--brand); outline-offset:1px; }
+  .cont { text-align:right; font-size:.8rem; color:var(--muted); }
+  .hp { position:absolute; left:-9999px; }
+  .aviso { font-size:.85rem; color:var(--muted); border-left:3px solid var(--line); padding-left:10px; margin:20px 0 0; }
+  button { margin-top:20px; width:100%; padding:12px; font:inherit; font-weight:600; border:0; border-radius:8px; background:var(--brand); color:#fff; cursor:pointer; }
+  button:disabled { opacity:.6; cursor:wait; }
+  .msg { margin-top:16px; padding:12px; border-radius:8px; display:none; }
+  .msg.ok { display:block; border:1px solid var(--ok); color:var(--ok); }
+  .msg.err { display:block; border:1px solid var(--err); color:var(--err); }
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <h1>Solicitação de Mudança - <?= projeto ?></h1>
+    <p class="sub">Descreva a mudança que você quer propor. O comitê analisa e decide.</p>
+
+    <form id="f" novalidate>
+      <label for="nome">Nome do solicitante</label>
+      <input id="nome" name="nome" required maxlength="<?= limites.nome ?>" autocomplete="name">
+
+      <label for="descricao">Descrição da mudança</label>
+      <textarea id="descricao" name="descricao" required maxlength="<?= limites.descricao ?>"></textarea>
+      <div class="cont" data-for="descricao"></div>
+
+      <label for="justificativa">Justificativa</label>
+      <textarea id="justificativa" name="justificativa" required maxlength="<?= limites.justificativa ?>"></textarea>
+      <div class="cont" data-for="justificativa"></div>
+
+      <label for="urgencia">Urgência</label>
+      <select id="urgencia" name="urgencia" required>
+        <option value="">Selecione</option>
+        <? for (var i = 0; i < urgencias.length; i++) { ?><option><?= urgencias[i] ?></option><? } ?>
+      </select>
+
+      <input class="hp" name="site" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+      <p class="aviso">Não informe dados pessoais, de clientes reais ou confidenciais. O texto é analisado por IA (Gemini), que só sugere; a decisão é do CCB.</p>
+
+      <button id="btn" type="submit">Enviar solicitação</button>
+      <div id="msg" class="msg" role="status" aria-live="polite"></div>
+    </form>
+  </div>
+</main>
+<script>
+  var f = document.getElementById('f'), btn = document.getElementById('btn'), msg = document.getElementById('msg');
+
+  document.querySelectorAll('.cont').forEach(function (c) {
+    var el = document.getElementById(c.dataset.for);
+    var upd = function () { c.textContent = el.value.length + ' / ' + el.maxLength; };
+    el.addEventListener('input', upd); upd();
+  });
+
+  function mostrar(tipo, texto) { msg.className = 'msg ' + tipo; msg.textContent = texto; }
+
+  f.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var dados = {};
+    new FormData(f).forEach(function (v, k) { dados[k] = String(v); });
+    var faltando = ['nome', 'descricao', 'justificativa', 'urgencia'].filter(function (k) { return !dados[k].trim(); });
+    if (faltando.length) { mostrar('err', 'Preencha todos os campos.'); document.getElementById(faltando[0]).focus(); return; }
+
+    btn.disabled = true; btn.textContent = 'Enviando...'; msg.className = 'msg';
+    google.script.run
+      .withSuccessHandler(function (r) {
+        f.reset(); f.querySelectorAll('textarea').forEach(function (t) { t.dispatchEvent(new Event('input')); });
+        mostrar('ok', 'Solicitação ' + r.numero + ' registrada. O comitê de controle de mudanças vai analisar e decidir em breve.');
+        btn.disabled = false; btn.textContent = 'Enviar outra solicitação';
+      })
+      .withFailureHandler(function (err) {
+        mostrar('err', (err && err.message) || 'Não foi possível enviar. Tente de novo.');
+        btn.disabled = false; btn.textContent = 'Enviar solicitação';
+      })
+      .registrarSolicitacao(dados);
+  });
+</script>
+</body>
+</html>
